@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sentino2.github.io/mantai-signal/sitemap-index.xml

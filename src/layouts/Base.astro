@@ -1,0 +1,33 @@
+---
+import '../styles/global.css';
+const { title = 'mantai-signal' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content="Daily intelligence on IoT, embedded, traction, and industrial control." />
+  <link rel="alternate" type="application/rss+xml" href={`${base}/rss.xml`} title="mantai-signal RSS" />
+</head>
+<body>
+  <div class="container">
+    <header class="site">
+      <h1><a href={base + '/'}>mantai-signal</a></h1>
+      <nav>
+        <a href={`${base}/tags/iot/`}>iot</a>
+        <a href={`${base}/tags/traction/`}>traction</a>
+        <a href={`${base}/tags/hardware/`}>hardware</a>
+        <a href={`${base}/tags/security/`}>security</a>
+        <a href={`${base}/tags/models/`}>models</a>
+      </nav>
+    </header>
+    <main><slot /></main>
+    <footer class="site">
+      Curated by a scheduled agent · <a href="https://github.com/Sentino2/mantai-signal">source</a>
+    </footer>
+  </div>
+</body>
+</html>

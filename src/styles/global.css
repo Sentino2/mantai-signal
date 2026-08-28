@@ -1,0 +1,51 @@
+:root {
+  --bg: #0b0d10;
+  --fg: #e6e8eb;
+  --muted: #8a929c;
+  --accent: #7cc4ff;
+  --border: #1e232a;
+  --card: #12151a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
+body { line-height: 1.55; font-size: 15px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container { max-width: 780px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+header.site {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem;
+}
+header.site h1 { font-size: 1.1rem; margin: 0; letter-spacing: -0.02em; }
+header.site nav a { margin-left: 1rem; color: var(--muted); font-size: 0.85rem; }
+
+.day-group { margin-bottom: 2rem; }
+.day-group h2 {
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); margin: 0 0 0.75rem;
+}
+
+article.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+  padding: 0.9rem 1rem; margin-bottom: 0.5rem;
+}
+article.card h3 { margin: 0 0 0.25rem; font-size: 0.95rem; font-weight: 500; }
+article.card .meta { color: var(--muted); font-size: 0.75rem; }
+article.card .tags { margin-top: 0.35rem; }
+article.card .tags a {
+  display: inline-block; font-size: 0.7rem; padding: 0 0.4rem;
+  border: 1px solid var(--border); border-radius: 3px; margin-right: 0.25rem;
+  color: var(--muted);
+}
+
+.post-body { margin-top: 1.5rem; }
+.post-body p { color: #c9cdd3; }
+
+footer.site {
+  margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border);
+  font-size: 0.75rem; color: var(--muted);
+}

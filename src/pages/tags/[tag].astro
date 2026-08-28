@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  const tags = new Set<string>();
+  posts.forEach((p) => p.data.tags.forEach((t) => tags.add(t)));
+  return [...tags].map((tag) => ({
+    params: { tag },
+    props: {
+      posts: posts
+        .filter((p) => p.data.tags.includes(tag))
+        .sort((a, b) => b.data.date.getTime() - a.data.date.getTime()),
+    },
+  }));
+}
+
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+<Base title={`#${tag} · mantai-signal`}>
+  <h2 style="font-size:1rem;color:var(--muted);">#{tag} — {posts.length} posts</h2>
+  {posts.map((p) => (
+    <article class="card">
+      <h3><a href={`${base}/posts/${p.slug}/`}>{p.data.title}</a></h3>
+      <div class="meta">{p.data.date.toISOString().slice(0,10)} · {p.data.source}</div>
+    </article>
+  ))}
+</Base>

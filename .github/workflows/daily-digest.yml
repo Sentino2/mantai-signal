@@ -1,0 +1,95 @@
+name: daily-digest
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 08:00 Europe/Madrid in summer (CEST), 07:00 in winter (CET)
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: 'Comma-separated source names (blank = all)'
+        required: false
+        default: ''
+
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Configure git
+        run: |
+          git config user.name  "mantai-signal-bot"
+          git config user.email "bot@users.noreply.github.com"
+
+      - name: Determine sources
+        id: srcs
+        run: |
+          if [ -n "${{ github.event.inputs.sources }}" ]; then
+            echo "list=${{ github.event.inputs.sources }}" | tr ',' '\n' >> $GITHUB_OUTPUT
+            echo "arr=$(echo '${{ github.event.inputs.sources }}' | tr ',' ' ')" >> $GITHUB_OUTPUT
+          else
+            all=$(python scripts/ingest.py --list | tr '\n' ' ')
+            echo "arr=$all" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Ingest and open one PR per source
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          STAMP=$(date -u +%Y%m%d-%H%M)
+          for src in ${{ steps.srcs.outputs.arr }}; do
+            echo "=== $src ==="
+            branch="bot/${STAMP}-${src}"
+            git checkout main
+            git pull --ff-only origin main
+            git checkout -b "$branch"
+
+            out=$(python scripts/ingest.py --source "$src" || true)
+            if [ -z "$(git status --porcelain)" ]; then
+              echo "no new items for $src, skipping"
+              git checkout main
+              git branch -D "$branch" || true
+              continue
+            fi
+
+            count=$(echo "$out" | grep -c "^$src" || true)
+            git add -A
+            git commit -m "$src: $count new item(s) ($STAMP)"
+            git push -u origin "$branch"
+
+            url=$(gh pr create \
+              --base main --head "$branch" \
+              --title "digest: $src ($STAMP)" \
+              --body "Automated daily digest from **$src**. $count new item(s) added." )
+            echo "opened $url"
+
+            # Give GitHub Actions a moment, then merge (squash).
+            sleep 30
+            gh pr merge "$url" --squash --delete-branch --admin || \
+              gh pr merge "$url" --squash --delete-branch
+          done
+
+          git checkout main
+          git pull --ff-only origin main

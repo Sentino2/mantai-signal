@@ -1,0 +1,26 @@
+name: merge-open-prs
+
+on:
+  workflow_dispatch:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Squash-merge every open PR authored by Sentino2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          prs=$(gh pr list -R ${{ github.repository }} --state open --author Sentino2 --json number -q '.[].number')
+          [ -z "$prs" ] && { echo "no open PRs"; exit 0; }
+          for n in $prs; do
+            echo "merging #$n"
+            gh pr merge -R ${{ github.repository }} "$n" --squash --delete-branch || true
+          done

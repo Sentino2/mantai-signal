@@ -79,16 +79,16 @@ jobs:
             git commit -m "$src: $count new item(s) ($STAMP)"
             git push -u origin "$branch"
 
-            url=$(gh pr create \
+            url=$(GH_TOKEN="${{ secrets.PAT || secrets.GITHUB_TOKEN }}" gh pr create \
               --base main --head "$branch" \
               --title "digest: $src ($STAMP)" \
               --body "Automated daily digest from **$src**. $count new item(s) added." )
             echo "opened $url"
 
-            # Give GitHub Actions a moment, then merge (squash).
+            # Merge as github-actions[bot] (different account than author) so
+            # Sentino2 earns Pull Shark credit on the merge.
             sleep 30
-            gh pr merge "$url" --squash --delete-branch --admin || \
-              gh pr merge "$url" --squash --delete-branch
+            GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr merge "$url" --squash --delete-branch
           done
 
           git checkout main

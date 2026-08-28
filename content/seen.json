@@ -29,6 +29,11 @@
     "nvd:CVE-2026-80559",
     "nvd:CVE-2026-80560",
     "nvd:CVE-2026-80567",
-    "nvd:CVE-2026-80569"
+    "nvd:CVE-2026-80569",
+    "zephyr:v3.7.3-rc1",
+    "zephyr:v4.3.1",
+    "zephyr:v4.3.1-rc1",
+    "zephyr:v4.4.2",
+    "zephyr:v4.4.2-rc1"
   ]
 }

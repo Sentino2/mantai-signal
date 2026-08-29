@@ -9,3 +9,7 @@
 | semtech | https://blog.semtech.com/rss.xml | LoRa / LoRaWAN ecosystem news |
 
 To propose a source, open an issue using the `source-request` template.
+
+## Cadence
+
+The digest cron runs at 06:00 UTC daily. Sources with no fresh items past the dedupe are skipped silently — this is normal and correct behaviour.

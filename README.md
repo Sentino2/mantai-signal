@@ -48,3 +48,5 @@ npm run dev
 ## Optional: LLM summaries
 
 Set repo secret `ANTHROPIC_API_KEY` to enable Claude-based summarization instead of extractive. The Action picks it up automatically.
+
+_Last verified: 2026-08-29 — pipeline attributes commits to Sentino2._

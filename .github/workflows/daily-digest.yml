@@ -39,7 +39,7 @@ jobs:
       - name: Configure git
         run: |
           git config user.name  "Sentino2"
-          git config user.email "santiago@mantai.io"
+          git config user.email "120407739+Sentino2@users.noreply.github.com"
 
       - name: Determine sources
         id: srcs

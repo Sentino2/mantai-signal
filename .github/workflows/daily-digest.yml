@@ -88,7 +88,7 @@ jobs:
             # Merge as github-actions[bot] (different account than author) so
             # Sentino2 earns Pull Shark credit on the merge.
             sleep 30
-            GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr merge "$url" --squash --delete-branch
+            GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr merge "$url" --merge --delete-branch
           done
 
           git checkout main

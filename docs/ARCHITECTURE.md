@@ -13,3 +13,7 @@ GitHub Actions
 ```
 
 Each source module exports `fetch() -> list[Item]`. Items are deduped against `content/seen.json` by stable `id`. Posts are written under `src/content/posts/YYYY/MM/` with front-matter validated by Astro content collections (`src/content/config.ts`).
+
+## Attribution
+
+All CI commits are made under the git identity `Sentino2 <120407739+Sentino2@users.noreply.github.com>` so they attribute to the account's contribution graph. The daily-digest workflow uses `--merge` (not squash) to preserve per-commit authorship on `main`.

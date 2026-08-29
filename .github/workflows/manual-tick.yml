@@ -1,0 +1,49 @@
+name: manual-tick
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git as Sentino2
+        run: |
+          git config user.name  "Sentino2"
+          git config user.email "120407739+Sentino2@users.noreply.github.com"
+
+      - name: Three real commits per click
+        run: |
+          set -euo pipefail
+          STAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          UUID=$(cat /proc/sys/kernel/random/uuid)
+
+          mkdir -p .pulse
+
+          # commit 1: append a click event to the audit log
+          echo "$STAMP click=$UUID actor=${{ github.actor }}" >> .pulse/clicks.log
+          git add .pulse/clicks.log
+          git commit -m "pulse: log manual tick $UUID"
+
+          # commit 2: bump the pulse counter (real, machine-readable state)
+          COUNT=1
+          if [ -f .pulse/count.json ]; then
+            COUNT=$(python3 -c "import json;print(json.load(open('.pulse/count.json'))['count']+1)")
+          fi
+          python3 -c "import json;json.dump({'count':$COUNT,'last':'$STAMP'},open('.pulse/count.json','w'),indent=2)"
+          git add .pulse/count.json
+          git commit -m "pulse: bump manual-tick counter to $COUNT"
+
+          # commit 3: stamp latest activity into a public timestamp file the site reads
+          echo "$STAMP" > .pulse/latest.txt
+          git add .pulse/latest.txt
+          git commit -m "pulse: stamp latest activity $STAMP"
+
+          git push

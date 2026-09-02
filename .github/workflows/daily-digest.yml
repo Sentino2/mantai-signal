@@ -2,13 +2,9 @@ name: daily-digest
 
 on:
   schedule:
-    - cron: '0 6 * * *'   # 08:00 Europe/Madrid in summer (CEST), 07:00 in winter (CET)
+    # Runs once daily; workflow itself adds 0-90 min jitter and a weekly rest day.
+    - cron: '0 6 * * *'
   workflow_dispatch:
-    inputs:
-      sources:
-        description: 'Comma-separated source names (blank = all)'
-        required: false
-        default: ''
 
 concurrency:
   group: daily-digest
@@ -16,80 +12,89 @@ concurrency:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   digest:
     runs-on: ubuntu-latest
     steps:
+      - name: Weekly rest-day gate
+        id: gate
+        run: |
+          WK=$(date -u +%V)
+          DOW=$(date -u +%u)                 # 1=Mon..7=Sun
+          REST=$(( (10#$WK) % 7 + 1 ))       # 1..7
+          echo "iso_week=$WK weekday=$DOW rest_day=$REST"
+          if [ "$DOW" = "$REST" ] && [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "today is this week's rest day; skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Random start jitter (0-90 min)
+        if: steps.gate.outputs.skip != 'true' && github.event_name == 'schedule'
+        run: |
+          MIN=$((RANDOM % 90))
+          echo "jitter: sleeping ${MIN} min"
+          sleep $((MIN * 60))
+
       - uses: actions/checkout@v7
+        if: steps.gate.outputs.skip != 'true'
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-python@v7
+        if: steps.gate.outputs.skip != 'true'
         with:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: scripts/requirements.txt
 
       - name: Install deps
+        if: steps.gate.outputs.skip != 'true'
         run: pip install -r scripts/requirements.txt
 
-      - name: Configure git
+      - name: Configure git as Sentino2
+        if: steps.gate.outputs.skip != 'true'
         run: |
           git config user.name  "Sentino2"
           git config user.email "120407739+Sentino2@users.noreply.github.com"
 
-      - name: Determine sources
-        id: srcs
-        run: |
-          if [ -n "${{ github.event.inputs.sources }}" ]; then
-            echo "list=${{ github.event.inputs.sources }}" | tr ',' '\n' >> $GITHUB_OUTPUT
-            echo "arr=$(echo '${{ github.event.inputs.sources }}' | tr ',' ' ')" >> $GITHUB_OUTPUT
-          else
-            all=$(python scripts/ingest.py --list | tr '\n' ' ')
-            echo "arr=$all" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Ingest and open one PR per source
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Ingest, cap to random 2-6, one commit per item
+        if: steps.gate.outputs.skip != 'true'
         run: |
           set -euo pipefail
-          STAMP=$(date -u +%Y%m%d-%H%M)
-          for src in ${{ steps.srcs.outputs.arr }}; do
-            echo "=== $src ==="
-            branch="bot/${STAMP}-${src}"
-            git checkout main
-            git pull --ff-only origin main
-            git checkout -b "$branch"
 
-            out=$(python scripts/ingest.py --source "$src" || true)
-            if [ -z "$(git status --porcelain)" ]; then
-              echo "no new items for $src, skipping"
-              git checkout main
-              git branch -D "$branch" || true
-              continue
-            fi
+          python scripts/ingest.py || true
 
-            count=$(echo "$out" | grep -c "^$src" || true)
-            git add -A
-            git commit -m "$src: $count new item(s) ($STAMP)"
-            git push -u origin "$branch"
+          mapfile -t NEW < <(git ls-files --others --exclude-standard src/content/posts)
+          COUNT=${#NEW[@]}
+          if [ "$COUNT" -eq 0 ]; then
+            echo "no new items today"
+            exit 0
+          fi
 
-            url=$(GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr create \
-              --base main --head "$branch" \
-              --title "digest: $src ($STAMP)" \
-              --body "Automated daily digest from **$src**. $count new item(s) added." )
-            echo "opened $url"
+          BUDGET=$(( RANDOM % 5 + 2 ))
+          [ "$BUDGET" -gt "$COUNT" ] && BUDGET=$COUNT
+          echo "have=$COUNT budget=$BUDGET"
 
-            # Merge as github-actions[bot] (different account than author) so
-            # Sentino2 earns Pull Shark credit on the merge.
-            sleep 30
-            GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr merge "$url" --merge --delete-branch
-          done
+          printf '%s\n' "${NEW[@]}" | shuf > /tmp/shuffled
+          head -n "$BUDGET" /tmp/shuffled > /tmp/keep
+          tail -n +$((BUDGET + 1)) /tmp/shuffled > /tmp/drop
+          [ -s /tmp/drop ] && xargs -r rm < /tmp/drop
 
-          git checkout main
-          git pull --ff-only origin main
+          # Revert seen.json to pre-run state and re-mark only kept items,
+          # so dropped items can appear on future days.
+          git checkout HEAD -- content/seen.json 2>/dev/null || rm -f content/seen.json
+          python scripts/mark_seen.py < /tmp/keep
+
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            title=$(sed -n 's/^title: "\(.*\)"$/\1/p' "$f" | head -1)
+            git add "$f"
+            git commit -q -m "post: ${title:-new item from digest}"
+          done < /tmp/keep
+
+          git add content/seen.json
+          git commit -q -m "chore: update dedupe index" || true
+
+          git push

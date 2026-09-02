@@ -80,6 +80,7 @@ def write_post(item: Item, body: str) -> Path:
         f"date: {day.isoformat()}",
         f'source: "{item.source}"',
         f'source_url: "{item.url}"',
+        f'ext_id: "{item.id}"',
         f"tags: {json.dumps(item.tags)}",
     ]
     if item.summary:

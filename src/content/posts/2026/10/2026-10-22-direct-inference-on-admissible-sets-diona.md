@@ -1,0 +1,13 @@
+---
+title: "Direct Inference on Admissible Sets (Diona)"
+date: 2026-10-22T16:35:47+00:00
+source: "arXiv"
+source_url: "https://arxiv.org/abs/2610.31526v1"
+ext_id: "arxiv:2610.31526v1"
+tags: ["hardware", "models"]
+summary: "We propose a new regression method named Direct Inference on Admissible Sets (Diona) that directly uses samples to estimate the state and its derivatives at a query point, along with their admissible bounds, without long global training. By casting the values and derivatives at the query and neighbouring samples as latent variables in a constrained optimisation problem, the burden of long training"
+---
+
+We propose a new regression method named Direct Inference on Admissible Sets (Diona) that directly uses samples to estimate the state and its derivatives at a query point, along with their admissible bounds, without long global training. By casting the values and derivatives at the query and neighbouring samples as latent variables in a constrained optimisation problem, the burden of long training loops becomes one of on-demand local solves. We establish Diona's theoretical properties including finite-sample coverage and, in the noiseless case, convergence to the true state and derivatives under dense sampling. In a nonlinear regression benchmark on six functions of three to eight dimensions, Diona was more accurate than a Gaussian process (GP) on noiseless data especially with denser data sets. Furthermore, as with GP, it produced uncertainty bounds that contained the true value at more than 95% of query points in four functions. Diona's time to a first prediction after a data set update was three to four orders of magnitude shorter than that of the GP, and two to three orders shorter than that of a neural network, which was more accurate but offers no uncertainty quantification. This low latency is paid for by on-demand predictions, so this latency advantage applies when relatively few predictions are needed between data updates.
+
+[Read the original at arXiv →](https://arxiv.org/abs/2610.31526v1)

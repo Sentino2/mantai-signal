@@ -109,8 +109,10 @@
     "arxiv:2610.37470v1",
     "arxiv:2610.37534v1",
     "arxiv:2610.40178v1",
+    "arxiv:2610.40257v1",
     "arxiv:2610.40387v1",
     "arxiv:2610.40427v1",
+    "arxiv:2610.40644v1",
     "hackaday:https://hackaday.com/2026/08/27/rooftop-camper-for-roofless-vehicle/",
     "hackaday:https://hackaday.com/2026/08/27/running-multiple-linux-kernels-without-hypervisor/",
     "hackaday:https://hackaday.com/2026/08/27/support-bath-enables-an-epoxy-benchy/",
@@ -241,6 +243,7 @@
     "nvd:CVE-2026-108789",
     "nvd:CVE-2026-108952",
     "nvd:CVE-2026-112146",
+    "nvd:CVE-2026-115707",
     "nvd:CVE-2026-118611",
     "nvd:CVE-2026-13465",
     "nvd:CVE-2026-13466",
@@ -314,6 +317,7 @@
     "semtech:https://blog.semtech.com/advancing-vbus-protection-for-48v-usb-power-delivery-with-surgeswitch-technology-1",
     "semtech:https://blog.semtech.com/ai-data-center-basics-what-is-linear-pluggable-optics-lpo",
     "semtech:https://blog.semtech.com/closing-the-solar-farm-monitoring-gap-with-lora-technology-1",
+    "semtech:https://blog.semtech.com/electronica-india-2026-smart-metering-iot-modules-protection-and-power-demos",
     "semtech:https://blog.semtech.com/fast-long-range-protocol-burst-megabit-speeds-meet-kilometer-range-wireless-links",
     "semtech:https://blog.semtech.com/iote-shenzhen-2026-semtech-and-the-lora-ecosystem-chart-the-next-chapter-of-iot-innovation",
     "semtech:https://blog.semtech.com/rex-tcd-2026-connected-and-sustainable-territories-event-in-paris",
@@ -321,6 +325,7 @@
     "zephyr:v4.3.1",
     "zephyr:v4.3.1-rc1",
     "zephyr:v4.4.2",
-    "zephyr:v4.4.2-rc1"
+    "zephyr:v4.4.2-rc1",
+    "zephyr:v4.5.0"
   ]
 }
